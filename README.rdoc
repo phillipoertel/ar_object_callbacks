@@ -1,0 +1,19 @@
+One of the problems with ActiveRecord are hard-coded callbacks (like :after_create and friends). 
+They often fire in unwanted situations, causing extra work.
+
+The classic example is bulk creation of data in a test database. 1.000s of new records
+are created, and if hard-coded callback are present, 1.000s of registration confirmation emails may be sent.
+Very unwanted, and very unexpected.
+
+Another typical case occurrs in tests: in a unit test, a model should be tested in isolation. If the models callbacks 
+require other objects to be present, more test setup is required, test setup that should not be needed
+for a unit test of one model.
+
+This is an attempt to solve this problem by separating the callback code from the actual models, and also make it very simple to
+configure if the callbacks should be run at all.
+
+The approach is as follows:
+1. move all callbacks to separate objects
+2. make execution of callbacks configurable with one setting
+
+ActiveRecord supports 1. out of the box, so 2. remains an easy exercise.
