@@ -1,19 +1,27 @@
-One of the problems with ActiveRecord are hard-coded callbacks (like :after_create and friends). 
-They often fire in unwanted situations, causing extra work.
+One of the problems with ActiveRecord are it's hard-coded callbacks (like :after_create and friends). 
+They often fire in unwanted situations, causing unwanted things to happen. And they are one of the causes
+of ActiveRecord objects becoming too large, and having too many responsibilities.
 
-The classic example is bulk creation of data in a test database. 1.000s of new records
-are created, and if hard-coded callback are present, 1.000s of registration confirmation emails may be sent.
+Some examples:
+
+* the classic example is bulk creation of data in a test database. 1.000s of new records are created, 
+and if hard-coded callback are present, 1.000s of registration confirmation emails may be sent. 
 Very unwanted, and very unexpected.
 
-Another typical case occurrs in tests: in a unit test, a model should be tested in isolation. If the models callbacks 
-require other objects to be present, more test setup is required, test setup that should not be needed
-for a unit test of one model.
+* another typical case occurrs in tests: in a unit test, a model should be tested in isolation. If the 
+models callbacks require other objects to be present, more test setup is required, test setup that 
+should not be needed for a unit test of one model.
 
-This is an attempt to solve this problem by separating the callback code from the actual models, and also make it very simple to
-configure if the callbacks should be run at all.
+This example moves the callback code into separate objects, something which ActiveRecord supports out
+of the box. It makes both objects testable independently, and allows easy configuration whether the 
+callbacks should be run.
 
-The approach is as follows:
-1. move all callbacks to separate objects
-2. make execution of callbacks configurable with one setting
+The resulting object structure reminds of ActiveRecord::Observer. However: in this approach the 
+callback registration is still visible in the model object. Since it's "The Rails Way" to insert callbacks
+in ActiveRecord, this should be understandable by all kinds of Rails developers. Separation of concerns + 
+compatibility with the default way Rails works --> sounds great to me.
 
-ActiveRecord supports 1. out of the box, so 2. remains an easy exercise.
+The example makes the callbacks configurable on a per-model basis (UserCallbacks.enabled). It could 
+be generalized to turn off all ActiveRecord callbacks, or made more specific to turn off only callbacks 
+of a certain type (like :after_create). Even more fine grained control wouldn't make sense, as it is 
+just as easy to just stub out that one callback object method.
